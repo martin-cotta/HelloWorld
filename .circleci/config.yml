@@ -1,6 +1,3 @@
-version: 2
-orbs:
-  react-native: react-native-community/react-native@4.4.2
 jobs:
   analyse_js:
     executor: rn/linux_js
