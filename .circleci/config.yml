@@ -31,7 +31,7 @@ jobs:
       - rn/yarn_install
       - run:
           command: echo
-          name: Run Fastlane
+          name: Run Fastlane!
   fastlane_ios_release:
     executor: rn/linux_js
     steps:
