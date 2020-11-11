@@ -1,46 +1,96 @@
 version: 2
+orbs:
+  react-native: react-native-community/react-native@4.4.2
 jobs:
-  one:
-    docker:
-      - image: circleci/ruby:2.4.1
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+  analyse_js:
+    executor: rn/linux_js
     steps:
-      - checkout
-      - run: echo "A first hello"
-      - run: mkdir -p my_workspace
-      - run: echo "Trying out workspaces" > my_workspace/echo-output
-      - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
-          root: my_workspace
-          # Must be relative path from root
-          paths:
-            - echo-output      
-  two:
-    docker:
-      - image: circleci/ruby:2.4.1
-        auth:
-          username: mydockerhub-user
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
-    steps:
-      - checkout
-      - run: echo "A more familiar hi"  
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
-          at: my_workspace
-
-      - run: |
-          if [[ $(cat my_workspace/echo-output) == "Trying out workspaces" ]]; then
-            echo "It worked!";
-          else
-            echo "Nope!"; exit 1
-          fi
+          at: .
+      - rn/yarn_install
+      - run:
+          command: yarn eslint
+          name: Run ESLint
+      - run:
+          command: yarn flow
+          name: Flow
+      - run:
+          command: yarn jest
+          name: Jest
+  checkout_code:
+    executor:
+      name: rn/linux_js
+      node_version: '10'
+    steps:
+      - checkout
+      - persist_to_workspace:
+          paths: .
+          root: .
+  fastlane_android_release:
+    executor: rn/linux_js
+    steps:
+      - attach_workspace:
+          at: .
+      - rn/yarn_install
+      - run:
+          command: echo
+          name: Run Fastlane
+  fastlane_ios_release:
+    executor: rn/linux_js
+    steps:
+      - attach_workspace:
+          at: .
+      - rn/yarn_install
+      - run:
+          command: echo 1
+          name: Run Fastlane
+orbs:
+  rn: react-native-community/react-native@1.0.0
+version: 2.1
 workflows:
-  version: 2
-  one_and_two:
+  test:
     jobs:
-      - one
-      - two:
+      - checkout_code
+      - analyse_js:
           requires:
-            - one
+            - checkout_code
+      - rn/android_build:
+          build_type: debug
+          name: build_android_debug
+          project_path: android
+          requires:
+            - analyse_js
+      - rn/android_build:
+          build_type: release
+          name: build_android_release
+          project_path: android
+          requires:
+            - analyse_js
+      - rn/android_test:
+          detox_configuration: android.emu.release
+          requires:
+            - build_android_release
+      - rn/ios_build:
+          build_configuration: Release
+          device: iPhone X
+          name: build_ios_release
+          node_version: '10'
+          project_path: ios/Example.xcodeproj
+          requires:
+            - analyse_js
+          scheme: Example
+      - rn/ios_build_and_test:
+          build_configuration: Release
+          detox_configuration: ios.sim.release
+          device: iPhone X
+          node_version: '10'
+          project_path: ios/Example.xcodeproj
+          requires:
+            - analyse_js
+          scheme: Example
+      - fastlane_android_release:
+          requires:
+            - rn/android_test
+      - fastlane_ios_release:
+          requires:
+            - rn/ios_build_and_test
