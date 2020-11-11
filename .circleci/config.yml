@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  build-android:
+  build:
     docker:
       - image: circleci/android:api-25-alpha
         auth:
