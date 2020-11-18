@@ -47,7 +47,16 @@ jobs:
             --bundle-output "android/bundle/main.jsbundle" \
             --sourcemap-output "android/bundle/main.jsbundle.map" \
             --assets-dest "android/bundle/"
-
+      - name: Archive iOS artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ios-bundle
+          path: ios/bundle
+      - name: Archive Android artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: android-bundle
+          path: android/bundle
   android:
     runs-on: ubuntu-latest
     steps:
