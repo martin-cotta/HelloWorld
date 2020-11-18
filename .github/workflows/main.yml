@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -8,15 +8,15 @@ on:
 
 jobs:
   javascript:
+    # https://github.com/actions/virtual-environments
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
       - name: NPM cache
+        # https://github.com/actions/cache/blob/main/examples.md
         uses: actions/cache@v2
         with:
-          # npm cache files are stored in `~/.npm` on Linux/macOS
-          # https://github.com/actions/cache/blob/main/examples.md
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
@@ -48,6 +48,7 @@ jobs:
             --sourcemap-output "android/bundle/main.jsbundle.map" \
             --assets-dest "android/bundle/"
       - name: Archive iOS artifacts
+        # https://docs.github.com/en/free-pro-team@latest/actions/guides/storing-workflow-data-as-artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ios-bundle
@@ -73,9 +74,8 @@ jobs:
         run: npm install
       - name: Build Android Release
         run: cd android && ./gradlew assembleDebug
-
   ios:
-    runs-on: macos-10.15 # https://github.com/actions/virtual-environments
+    runs-on: macos-10.15
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
