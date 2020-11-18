@@ -7,31 +7,22 @@ on:
     branches: [ main ]
 
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: macos-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    runs-on: macos-11.0 # https://github.com/actions/virtual-environments
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      # ----------------------------------------------------------------
-      - name: Use Node.jS
-        uses: actions/setup-node@v1
-        with:
-          node-version: '12.x'
+      
+      # JS ----------------------------------------------------------------
       - run: npm ci
-      - run: npm run build --if-present
       - run: npm test
-      # ----------------------------------------------------------------
+      
+      # Android -----------------------------------------------------------
       - name: Build Android Release
-        run: |
-          cd android && ./gradlew assembleDebug
-      # ----------------------------------------------------------------
+        run: cd android && ./gradlew assembleDebug
+      
+      # iOS ---------------------------------------------------------------
       - name: run pod install
-        run: |
-          cd ios && pod install
+        run: cd ios && pod install
       - name: Set Default Scheme
         run: |
           cd ios
