@@ -10,6 +10,7 @@ jobs:
   javascript:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
