@@ -7,35 +7,45 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-    runs-on: macos-10.15 # https://github.com/actions/virtual-environments
+  javascript:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      
-      # JS ----------------------------------------------------------------
-      - name: Cache node modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
+      - uses: actions/cache@v2
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           # https://github.com/actions/cache/blob/main/examples.md
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: Install Dependencies
-        run: npm install
-      - name: Test
-        run: npm test
-      
-      # Android -----------------------------------------------------------
+            ${{ runner.os }}-node-
+      - run: npm install
+      - run: npm test 
+  
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - run: npm install
       - name: Build Android Release
-        run: cd android && ./gradlew assembleRelease
-      
-      # iOS ---------------------------------------------------------------
+        run: cd android && ./gradlew assembleRelease 
+
+  ios:
+    runs-on: macos-10.15 # https://github.com/actions/virtual-environments
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - run: npm install
       - uses: actions/cache@v2
         with:
           path: Pods
