@@ -2,16 +2,18 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   javascript:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Restore NPM cache
+        uses: actions/cache@v2
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           # https://github.com/actions/cache/blob/main/examples.md
@@ -19,11 +21,12 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - run: npm install
-      - run: npm test 
-      - name: Bundle React Native code/images and source maps (iOS)
+      - name: Install NPM packages
+        run: npm install
+      - name: Run Unit Tests
+        run: npm test
+      - name: Bundle React Native code and images (iOS)
         run: |
-          echo "Bundle React Native code/images and source maps"
           mkdir -p ios/bundle
           npx react-native bundle \
             --entry-file index.js \
@@ -33,9 +36,8 @@ jobs:
             --bundle-output "ios/bundle/main.jsbundle" \
             --sourcemap-output "ios/bundle/main.jsbundle.map" \
             --assets-dest "ios/bundle/"
-      - name: Bundle React Native code/images and source maps (android)
+      - name: Bundle React Native code and images (android)
         run: |
-          echo "Bundle React Native code/images and source maps"
           mkdir -p android/bundle
           npx react-native bundle \
             --entry-file index.js \
@@ -45,12 +47,14 @@ jobs:
             --bundle-output "android/bundle/main.jsbundle" \
             --sourcemap-output "android/bundle/main.jsbundle.map" \
             --assets-dest "android/bundle/"
-  
+
   android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Restore NPM cache
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -63,8 +67,10 @@ jobs:
   ios:
     runs-on: macos-10.15 # https://github.com/actions/virtual-environments
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Restore NPM cache
+        uses: actions/cache@v2
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
