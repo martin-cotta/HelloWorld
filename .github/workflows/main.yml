@@ -58,7 +58,7 @@ jobs:
             ${{ runner.os }}-node-
       - run: npm install
       - name: Build Android Release
-        run: cd android && ./gradlew assembleRelease 
+        run: cd android && ./gradlew assembleDebug
 
   ios:
     runs-on: macos-10.15 # https://github.com/actions/virtual-environments
@@ -90,6 +90,7 @@ jobs:
         env:
           scheme: ${{ 'default' }}
           platform: ${{ 'iOS Simulator' }}
+          SKIP_BUNDLING: 1
         run: |
           cd ios
           device=`instruments -s -devices | grep -oE 'iPhone.*?[^\(]+' | head -1 | awk '{$1=$1;print}'`
